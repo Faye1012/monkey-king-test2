@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monkey King Investment</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        // 配置Tailwind商务风格主题
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0f172a', // 深灰蓝（商务主色）
+                        secondary: '#3b82f6', // 亮蓝（强调色）
+                        accent: '#f97316', // 橙色（行动按钮）
+                        neutral: {
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif', 'system-ui'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-gradient-business {
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            }
+            .card-transition {
+                @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+            }
+            .btn-effect {
+                @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+            }
+            .nav-scroll {
+                @apply bg-primary/95 backdrop-blur-sm shadow-md;
+            }
+            .text-gradient {
+                @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-300;
+            }
+            .glass-effect {
+                @apply bg-white/10 backdrop-blur-md border border-white/20;
+            }
+        }
+    </style>
+    
+    <style>
+        /* Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* 淡入动画 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 隐藏滚动条但保留功能 */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* 导航菜单动画 */
+        .menu-enter {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        .menu-enter-active {
+            transform: translateY(0);
+            opacity: 1;
+            transition: transform 300ms, opacity 300ms;
+        }
+        .menu-exit {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .menu-exit-active {
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: transform 300ms, opacity 300ms;
+        }
+        /* 文章卡片悬停效果 */
+        .article-card:hover .article-image {
+            transform: scale(1.05);
+        }
+        .article-image {
+            transition: transform 0.5s ease;
+        }
+    </style>
+</head>
+<body class="antialiased hide-scrollbar bg-gradient-to-br from-neutral-100 to-white">
+    <!-- 导航栏（滚动时变化样式） -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-3">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <!-- Monkey King标题始终为白色 -->
+                <span class="text-2xl md:text-3xl text-white font-bold tracking-tight">Monkey King</span>
+            </a>
+            <nav class="hidden md:flex space-x-8">
+                <!-- 导航链接始终为白色 -->
+                <a href="#about-section" class="text-white/90 hover:text-white transition-colors text-lg font-medium">About</a>
+                <a href="#articles-section" class="text-white/90 hover:text-white transition-colors text-lg font-medium">Articles</a>
+                <a href="#contact-section" class="text-white/90 hover:text-white transition-colors text-lg font-medium">Contact</a>
+            </nav>
+            <button id="mobile-menu-btn" class="md:hidden text-white text-2xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="fixed inset-0 bg-primary/98 z-40 flex flex-col justify-center items-center transform -translate-y-full transition-transform duration-300 ease-in-out">
+            <button id="close-menu-btn" class="absolute top-6 right-6 text-white text-2xl">
+                <i class="fa fa-times"></i>
+            </button>
+            <nav class="flex flex-col space-y-8 text-center">
+                <a href="#about-section" class="text-white text-2xl font-medium hover:text-accent transition-colors">About</a>
+                <a href="#articles-section" class="text-white text-2xl font-medium hover:text-accent transition-colors">Articles</a>
+                <a href="#contact-section" class="text-white text-2xl font-medium hover:text-accent transition-colors">Contact</a>
+                <div class="flex space-x-6 mt-8">
+                    <a href="https://www.linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-secondary transition-colors">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                    <a href="https://twitter.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-secondary transition-colors">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="https://www.facebook.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-secondary transition-colors">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="min-h-screen flex flex-col items-center pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+        <!-- 英雄区域（头部横幅） -->
+        <section id="hero-section" class="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden relative fade-in">
+            <!-- 背景渐变 -->
+            <div class="absolute inset-0 bg-gradient-business opacity-95"></div>
+            <!-- 金融主题背景图 -->
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay opacity-30"></div>
+            
+            <!-- 装饰元素 -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full filter blur-3xl -mr-32 -mt-32"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-secondary/20 rounded-full filter blur-3xl -ml-48 -mb-48"></div>
+            
+            <div class="relative z-10 py-20 md:py-28 px-6 md:px-12 text-center">
+                <div class="inline-block mb-8">
+                    <div class="w-20 h-1 bg-accent mx-auto rounded-full"></div>
+                </div>
+                <h1 class="text-[clamp(2.5rem,5vw,4.5rem)] font-bold text-white mb-6 tracking-tight text-shadow leading-tight">
+                    Monkey King Investment
+                </h1>
+                <p class="text-xl md:text-2xl lg:text-3xl text-blue-100 max-w-3xl mx-auto mb-10">
+                    Insight into Value, Win the Future with Wisdom
+                </p>
+                <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="learn-more-btn" class="inline-block bg-accent text-white font-medium px-8 py-4 rounded-lg shadow-lg btn-effect text-lg">
+                        Explore Insights
+                    </button>
+                    <a href="#contact-section" class="inline-block bg-white/10 text-white font-medium px-8 py-4 rounded-lg shadow-lg btn-effect text-lg border border-white/30">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主内容区域 -->
+        <main class="w-full max-w-7xl bg-white shadow-xl rounded-2xl overflow-hidden mt-16">
+            <!-- 导航按钮区 -->
+            <nav class="flex justify-center flex-wrap gap-4 p-6 bg-neutral-100 rounded-t-xl">
+                <button id="about-btn" class="px-8 py-4 font-medium rounded-lg bg-primary text-white shadow-md btn-effect flex items-center gap-2 text-lg">
+                    <i class="fa fa-user-circle"></i>
+                    <span>About</span>
+                </button>
+                <button id="articles-btn" class="px-8 py-4 font-medium rounded-lg bg-primary text-white shadow-md btn-effect flex items-center gap-2 text-lg">
+                    <i class="fa fa-file-text"></i>
+                    <span>Articles</span>
+                </button>
+                <a href="https://podcasts.apple.com/" target="_blank" rel="noopener noreferrer" class="px-8 py-4 font-medium rounded-lg bg-accent text-white shadow-md btn-effect flex items-center gap-2 text-lg">
+                    <i class="fa fa-podcast"></i>
+                    <span>Podcast</span>
+                </a>
+                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="px-8 py-4 font-medium rounded-lg bg-accent text-white shadow-md btn-effect flex items-center gap-2 text-lg">
+                    <i class="fa fa-youtube-play"></i>
+                    <span>YouTube</span>
+                </a>
+                <button id="contact-btn" class="px-8 py-4 font-medium rounded-lg bg-primary text-white shadow-md btn-effect flex items-center gap-2 text-lg">
+                    <i class="fa fa-envelope"></i>
+                    <span>Contact</span>
+                </button>
+            </nav>
+
+            <!-- 关于Monkey King区域 -->
+            <section id="about-section" class="hidden px-6 md:px-12 py-12 md:py-16 fade-in">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-800 mb-4">About Monkey King</h2>
+                    <div class="w-20 h-1 bg-secondary mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <!-- 专业头像区域 -->
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl transform rotate-3"></div>
+                        <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1374&auto=format&fit=crop" alt="Monkey King Professional Portrait" class="relative z-10 rounded-xl shadow-card w-full max-w-xs mx-auto object-cover aspect-square border-4 border-white">
+                    </div>
+                    
+                    <!-- 内容区域 -->
+                    <div>
+                        <div class="space-y-6 text-neutral-700 leading-relaxed">
+                            <p class="text-xl">
+                                Monkey King, a legendary figure with decades of experience in the investment field, is renowned for his unique value investing philosophy and exceptional market insights.
+                            </p>
+                            <p class="text-xl">
+                                He previously held senior executive positions in major corporations, leading teams to achieve impressive investment results through his profound financial knowledge and rich practical experience.
+                            </p>
+                            <p class="text-xl">
+                                Monkey King is not only a practitioner in the capital market but also a pioneer in theory. His book, "Value Investing," lucidly explains the core essence of value investing, becoming an essential read for countless investors.
+                            </p>
+                            <p class="text-xl">
+                                His investment philosophy emphasizes a deep understanding of a company's intrinsic value, advocates for long-term holding, and firmly believes in finding undervalued quality assets amidst market fluctuations.
+                            </p>
+                        </div>
+                        
+                        <!-- 投资理念 -->
+                        <div class="mt-12 bg-neutral-50 rounded-xl p-6 md:p-8 border border-neutral-200">
+                            <h3 class="text-2xl font-bold text-neutral-800 mb-4">Investment Philosophy</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                        <i class="fa fa-search"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-neutral-800 text-lg">Deep Value Analysis</h4>
+                                        <p class="text-neutral-600">Focus on understanding a company's true intrinsic value beyond market fluctuations.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                        <i class="fa fa-trees"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-neutral-800 text-lg">Long-Term Perspective</h4>
+                                        <p class="text-neutral-600">Advocate for patient investing and holding quality assets through market cycles.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                        <i class="fa fa-shield"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-neutral-800 text-lg">Risk Management</h4>
+                                        <p class="text-neutral-600">Prioritize capital preservation and avoid unnecessary risks.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 社交媒体图标 -->
+                        <div class="mt-10 flex space-x-4">
+                            <a href="https://www.linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                <i class="fa fa-linkedin text-xl"></i>
+                            </a>
+                            <a href="https://twitter.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                <i class="fa fa-twitter text-xl"></i>
+                            </a>
+                            <a href="https://www.facebook.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                <i class="fa fa-facebook text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button id="back-to-top-from-about-btn" class="mt-16 mx-auto block px-8 py-4 font-medium rounded-lg bg-neutral-200 text-neutral-800 btn-effect flex items-center gap-2">
+                    <i class="fa fa-arrow-up"></i>
+                    <span>Back to Top</span>
+                </button>
+            </section>
+
+            <!-- 文章区域 -->
+            <section id="articles-section" class="hidden px-6 md:px-12 py-12 md:py-16 fade-in">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-800 mb-4">Monkey King's Articles</h2>
+                    <div class="w-20 h-1 bg-secondary mx-auto rounded-full"></div>
+                    <p class="mt-6 text-xl text-neutral-600 max-w-2xl mx-auto">Insights on value investing, market analysis, and financial strategy to guide your investment journey</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 文章1 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1551887194-48161a7ab32f?q=80&w=1374&auto=format&fit=crop" alt="Economic Moats Analysis" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> June 15, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 8 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                The Cornerstone of Value Investing: Understanding Economic Moats
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Delve into the concept of "economic moats" in value investing, analyzing how companies build and maintain their competitive advantages...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article1-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article1-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Delve into the concept of "economic moats" in value investing, analyzing how companies build and maintain their competitive advantages, and how investors can identify quality companies with strong moats.
+                                </p>
+                                <p>
+                                    This article explores various types of economic moats including brand loyalty, network effects, cost advantages, and regulatory barriers. Learn how to evaluate the strength of a company's moat and use this knowledge to make informed investment decisions.
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Key Takeaways:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>Identify companies with sustainable competitive advantages</li>
+                                        <li>Learn to analyze different types of economic moats</li>
+                                        <li>How to assess the durability of a company's moat</li>
+                                        <li>Case studies of companies with strong and weak moats</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 文章2 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1527525443983-6e60c75fff46?q=80&w=1374&auto=format&fit=crop" alt="Market Cycles Analysis" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> May 22, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 10 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                Navigating Cycles: Maintaining Steadfastness Amidst Market Volatility
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Discuss how value investors should remain calm and adhere to principles during economic cycles and market fluctuations...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article2-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article2-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Discuss how value investors should remain calm and adhere to principles during economic cycles and market fluctuations, avoiding impulsive buying and selling, and leveraging irrational market behavior for contrarian investments.
+                                </p>
+                                <p>
+                                    This piece examines historical market cycles and provides strategies for maintaining discipline during periods of extreme volatility. Learn how to distinguish between temporary market noise and fundamental changes in
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Strategies for Volatile Markets:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>How to stay rational during market euphoria and panic</li>
+                                        <li>Position sizing techniques for uncertain times</li>
+                                        <li>Identifying opportunities in market dislocations</li>
+                                        <li>The importance of cash reserves in volatile markets</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 文章3 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1374&auto=format&fit=crop" alt="Financial Statement Analysis" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> April 10, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 7 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                The Art of Financial Statement Analysis: Unveiling Business Truths from Numbers
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Teach investors how to effectively read and analyze corporate financial statements, including balance sheets, income statements...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article3-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article3-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Teach investors how to effectively read and analyze corporate financial statements, including balance sheets, income statements, and cash flow statements, to gain insights into a company's true operating condition and potential risks.
+                                </p>
+                                <p>
+                                    This article breaks down the key components of financial statements and provides practical tips for identifying red flags and understanding a company's financial health.
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Financial Analysis Tools:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>Key metrics to focus on in balance sheets</li>
+                                        <li>Understanding cash flow vs. reported earnings</li>
+                                        <li>How to spot accounting irregularities</li>
+                                        <li>Using financial ratios for comparative analysis</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 文章4 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1516455540537-9820a78d1510?q=80&w=1374&auto=format&fit=crop" alt="Long-Term Investing" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> March 5, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 9 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                The Power of Compounding: Why Long-Term Investing Wins
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Explore the magic of compound interest and why it's the most powerful force in investing according to Warren Buffett...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article4-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article4-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Explore the magic of compound interest and why it's the most powerful force in investing according to Warren Buffett. Learn how time in the market trumps timing the market and why patience is the key to building wealth.
+                                </p>
+                                <p>
+                                    This article includes real-world examples and mathematical illustrations of how compounding works over different time horizons and with varying rates of return.
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Compounding Strategies:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>The rule of 72 and how to use it</li>
+                                        <li>How dividends accelerate wealth growth</li>
+                                        <li>Why starting early matters more than high returns</li>
+                                        <li>Case studies of long-term compounding success</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 文章5 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1374&auto=format&fit=crop" alt="Contrarian Investing" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> February 18, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 8 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                Contrarian Investing: Profiting When Others Fear
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Learn how to embrace contrarian thinking and find opportunities in sectors and companies that are out of favor...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article5-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article5-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Learn how to embrace contrarian thinking and find opportunities in sectors and companies that are out of favor with the market. Discover how to separate temporary setbacks from fundamental business issues.
+                                </p>
+                                <p>
+                                    This article explores the psychological aspects of contrarian investing and provides a framework for identifying situations where market overreaction creates attractive entry points.
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Contrarian Checklist:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>How to identify market overreaction</li>
+                                        <li>Tools for assessing business resilience</li>
+                                        <li>Managing risk in contrarian positions</li>
+                                        <li>Historical examples of successful contrarian plays</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 文章6 -->
+                    <div class="article-card bg-white rounded-xl shadow-card overflow-hidden card-transition">
+                        <div class="h-60 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1374&auto=format&fit=crop" alt="Risk Management" class="article-image h-full w-full object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-neutral-500 mb-3">
+                                <span class="flex items-center"><i class="fa fa-calendar-o mr-2"></i> January 10, 2025</span>
+                                <span class="mx-3">•</span>
+                                <span class="flex items-center"><i class="fa fa-clock-o mr-2"></i> 11 min read</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-neutral-800 mb-3">
+                                Risk Management: Protecting Capital in an Uncertain World
+                            </h3>
+                            <p class="text-neutral-600 mb-4">
+                                Comprehensive guide to risk management strategies that focus on capital preservation while still achieving growth...
+                            </p>
+                            <button class="text-secondary font-medium hover:text-secondary/80 transition-colors flex items-center gap-1" onclick="toggleArticle(this, 'article6-content')">
+                                <span>Read More</span>
+                                <i class="fa fa-chevron-right ml-1 text-sm"></i>
+                            </button>
+                            <div id="article6-content" class="hidden mt-4 pt-4 border-t border-neutral-200">
+                                <p class="mb-4">
+                                    Comprehensive guide to risk management strategies that focus on capital preservation while still achieving growth. Learn how successful investors manage downside risk and avoid permanent loss of capital.
+                                </p>
+                                <p>
+                                    This article covers position sizing, diversification, portfolio rebalancing, and the use of hedging techniques in a value investing framework.
+                                </p>
+                                <div class="mt-4 pt-4 border-t border-neutral-200">
+                                    <h4 class="font-bold text-neutral-800 mb-2">Risk Management Principles:</h4>
+                                    <ul class="list-disc pl-5 space-y-2 text-neutral-600">
+                                        <li>The importance of margin of safety</li>
+                                        <li>Position sizing strategies for different risk profiles</li>
+                                        <li>When and how to use stop-loss orders effectively</li>
+                                        <li>Building a resilient investment portfolio</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="back-to-about-btn" class="mt-16 mx-auto block px-8 py-4 font-medium rounded-lg bg-neutral-200 text-neutral-800 btn-effect flex items-center gap-2">
+                    <i class="fa fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </button>
+            </section>
+
+            <!-- 联系我们区域 -->
+            <section id="contact-section" class="hidden px-6 md:px-12 py-12 md:py-16 fade-in">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-800 mb-4">Contact Us</h2>
+                    <div class="w-20 h-1 bg-secondary mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div>
+                        <p class="text-xl text-neutral-700 mb-8">If you have any questions or business inquiries, please feel free to contact Monkey King via:</p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                    <i class="fa fa-envelope text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-neutral-800 text-lg">Email</h4>
+                                    <a href="mailto:fayemuxi@qq.com" class="text-secondary hover:underline font-medium text-lg tracking-wide block mt-1">fayemuxi@qq.com</a>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                    <i class="fa fa-map-marker text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-neutral-800 text-lg">Office Location</h4>
+                                    <p class="text-neutral-700 mt-1">Financial District, Shanghai, China</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary flex-shrink-0 mt-1">
+                                    <i class="fa fa-clock-o text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-neutral-800 text-lg">Business Hours</h4>
+                                    <p class="text-neutral-700 mt-1">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 社交媒体 -->
+                        <div class="mt-10">
+                            <h4 class="font-bold text-neutral-800 text-lg mb-4">Connect With Us</h4>
+                            <div class="flex space-x-4">
+                                <a href="https://www.linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                    <i class="fa fa-linkedin text-xl"></i>
+                                </a>
+                                <a href="https://twitter.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                    <i class="fa fa-twitter text-xl"></i>
+                                </a>
+                                <a href="https://www.facebook.com/yourprofile" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-secondary hover:text-white transition-colors btn-effect">
+                                    <i class="fa fa-facebook text-xl"></i>
+                                </a>
+                                <a href="https://www.youtube.com/channel/yourchannel" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-700 hover:bg-red-500 hover:text-white transition-colors btn-effect">
+                                    <i class="fa fa-youtube-play text-xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="back-to-about-from-contact-btn" class="mt-16 mx-auto block px-8 py-4 font-medium rounded-lg bg-neutral-200 text-neutral-800 btn-effect flex items-center gap-2">
+                    <i class="fa fa-arrow-left"></i>
+                    <span>Back to Home</span>
+                </button>
+            </section>
+        </main>
+
+        <!-- 底部版权信息 -->
+        <footer class="w-full max-w-7xl mt-16 text-center text-neutral-600 text-lg">
+            &copy; 2025 Monkey King Investment. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        // 获取所有section和按钮的引用
+        const heroSection = document.getElementById('hero-section');
+        const aboutSection = document.getElementById('about-section');
+        const articlesSection = document.getElementById('articles-section');
+        const contactSection = document.getElementById('contact-section');
+
+        const learnMoreBtn = document.getElementById('learn-more-btn');
+        const aboutBtn = document.getElementById('about-btn');
+        const articlesBtn = document.getElementById('articles-btn');
+        const contactBtn = document.getElementById('contact-btn');
+        const backToAboutBtn = document.getElementById('back-to-about-btn');
+        const backToAboutFromContactBtn = document.getElementById('back-to-about-from-contact-btn');
+        const backToTopFromAboutBtn = document.getElementById('back-to-top-from-about-btn');
+        
+        // 移动端菜单相关元素
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+
+        // 导航栏文字颜色切换逻辑
+        const navbar = document.getElementById('navbar');
+        // 这里的navLinks现在只包含导航链接，Monkey King标题的颜色直接在HTML中设置
+        const navLinks = navbar.querySelectorAll('nav a'); 
+        const monkeyKingTitle = navbar.querySelector('span.text-2xl');
+
+        function updateNavbarStyle() {
+            if (window.scrollY > 50) {
+                // 滚动后，导航栏背景变深，文字保持白色
+                navbar.classList.add('nav-scroll');
+                monkeyKingTitle.classList.remove('text-neutral-900'); // 确保标题是白色
+                monkeyKingTitle.classList.add('text-white');
+                navLinks.forEach(link => {
+                    link.classList.remove('text-neutral-900', 'hover:text-secondary'); // 确保链接是白色
+                    link.classList.add('text-white/90', 'hover:text-white');
+                });
+            } else {
+                // 初始状态，导航栏透明，文字保持白色（因为英雄区背景是深色）
+                navbar.classList.remove('nav-scroll');
+                monkeyKingTitle.classList.remove('text-neutral-900'); // 确保标题是白色
+                monkeyKingTitle.classList.add('text-white');
+                navLinks.forEach(link => {
+                    link.classList.remove('text-neutral-900', 'hover:text-secondary'); // 确保链接是白色
+                    link.classList.add('text-white/90', 'hover:text-white');
+                });
+            }
+        }
+
+        // 页面加载和滚动时更新导航栏样式
+        window.addEventListener('scroll', updateNavbarStyle);
+        document.addEventListener('DOMContentLoaded', updateNavbarStyle); // 初始加载时设置一次
+
+        // 显示指定section并隐藏其他section，带淡入动画和滚动
+        function showSection(sectionToShow) {
+            // 隐藏所有section
+            [aboutSection, articlesSection, contactSection].forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // 显示目标section并应用淡入动画
+            sectionToShow.classList.remove('hidden');
+            sectionToShow.classList.add('fade-in');
+
+            // 滚动到目标section
+            sectionToShow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // 如果是在移动端，点击导航链接后关闭菜单
+            if (window.innerWidth < 768) {
+                closeMobileMenu();
+            }
+        }
+
+        // 移动端菜单控制
+        function openMobileMenu() {
+            mobileMenu.classList.remove('-translate-y-full');
+            mobileMenu.classList.add('translate-y-0');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+        
+        function closeMobileMenu() {
+            mobileMenu.classList.add('-translate-y-full');
+            mobileMenu.classList.remove('translate-y-0');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // “Explore Insights”按钮点击事件
+        learnMoreBtn.addEventListener('click', () => {
+            showSection(aboutSection);
+        });
+
+        // 主导航按钮点击事件
+        aboutBtn.addEventListener('click', () => showSection(aboutSection));
+        articlesBtn.addEventListener('click', () => showSection(articlesSection));
+        contactBtn.addEventListener('click', () => showSection(contactSection));
+
+        // “Back to Home”按钮点击事件（从文章/联系我们）
+        backToAboutBtn.addEventListener('click', () => showSection(aboutSection));
+        backToAboutFromContactBtn.addEventListener('click', () => showSection(aboutSection));
+
+        // “Back to Top”按钮点击事件（从关于我们）
+        backToTopFromAboutBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 展开/收起文章内容
+        function toggleArticle(buttonElement, articleId) {
+            const articleContent = document.getElementById(articleId);
+            const toggleTextSpan = buttonElement.querySelector('span');
+            const icon = buttonElement.querySelector('i');
+
+            if (articleContent.classList.contains('hidden')) {
+                articleContent.classList.remove('hidden');
+                if (toggleTextSpan) toggleTextSpan.textContent = 'Read Less';
+                if (icon) {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-up');
+                }
+            } else {
+                articleContent.classList.add('hidden');
+                if (toggleTextSpan) toggleTextSpan.textContent = 'Read More';
+                if (icon) {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-right');
+                }
+            }
+        }
+
+        // 移动端菜单事件
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        closeMenuBtn.addEventListener('click', closeMobileMenu);
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        // 页面初始加载时显示“关于美猴王”部分
+        document.addEventListener('DOMContentLoaded', () => {
+            // 确保所有内容部分在HTML中默认是隐藏的，然后通过JS控制显示
+            // 这样可以避免初始加载时的闪烁
+            aboutSection.classList.add('hidden');
+            articlesSection.classList.add('hidden');
+            contactSection.classList.add('hidden');
+            
+            showSection(aboutSection); // 初始显示About部分
+        });
+    </script>
+</body>
+</html>
+    
